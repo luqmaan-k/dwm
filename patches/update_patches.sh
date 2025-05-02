@@ -1,27 +1,52 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Resolve directories
+# -----------------------------------------------------------------------------
+# patch-dwm.sh
+#  - Place this script in your dwm/patches/ folder alongside your *.diff files
+#  - It will apply patches in a fixed, reliable order, then rebuild & install.
+# -----------------------------------------------------------------------------
+
+# Resolve the script & repo directories
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
 
-cd "$REPO_DIR" || exit 1
+# Go to the dwm source root
+cd "$REPO_DIR"
 
-echo "Cleaning old build..."
+# Clean out any previous build artifacts
+echo "🧹 Cleaning previous build…"
 make clean
 
-echo "Applying patches from $SCRIPT_DIR..."
-for patch in "$SCRIPT_DIR"/*.diff; do
-  echo "→ Applying $(basename "$patch")"
-  patch -N -p1 < "$patch" || {
-    echo "✗ Failed to apply $(basename "$patch")"
+# Define your patches in the precise order they must be applied:
+patches=(
+  dwm-status2d-systray-6.4.diff
+)
+
+echo "📦 Applying patches in order:"
+for p in "${patches[@]}"; do
+  patch_file="$SCRIPT_DIR/$p"
+  if [[ ! -f "$patch_file" ]]; then
+    echo "⚠️  Warning: Patch not found: $p — skipping."
+    continue
+  fi
+
+  echo "→ $p"
+  # -N: ignore already applied hunks
+  # -p1: strip leading slash from file paths in diff
+  patch -N -p1 < "$patch_file" || {
+    echo "❌ Failed to apply $p"
     exit 1
   }
 done
 
-echo "Rebuilding DWM..."
+# Rebuild and install
+echo "🛠 Rebuilding dwm…"
 make
-sudo make install
 
-echo "Patching complete. Restart DWM to apply changes."
+echo "🚀 Installing dwm (PREFIX=\${PREFIX:-\$HOME/.local})…"
+make install PREFIX="${PREFIX:-$HOME/.local}"
+
+echo "✅ All patches applied and dwm installed."
+echo "   Restart or reload dwm to see your patched setup."
 
