@@ -1,4 +1,3 @@
-#include <X11/XF86keysym.h>
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
@@ -46,7 +45,7 @@ static const Layout layouts[] = {
 };
 
 /* key definitions */
-#define MODKEY Mod4Mask    /* Super key */
+#define MODKEY Mod1Mask
 #define TAGKEYS(KEY,TAG) \
 	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
@@ -59,48 +58,21 @@ static const Layout layouts[] = {
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
-// Rofi
-static const char *roficmd[]  = { "rofi", "-show", "drun", NULL };
-// Alacritty
-static const char *termcmd[]  = { "alacritty", NULL };
-// ZenBrowser
-static const char *zencmd[]   = { "flatpak", "run", "app.zen_browser.zen", NULL };
-
-/* Brightness */
-static const char *bright_up[]   = { "brightnessctl", "set", "+10%", NULL };
-static const char *bright_down[] = { "brightnessctl", "set", "10%-", NULL };
-
-/* Volume (PipeWire/ALSA) */
-static const char *vol_up[]      = { "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%", NULL };
-static const char *vol_down[]    = { "pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%", NULL };
-static const char *vol_mute[]    = { "pactl", "set-sink-mute",   "@DEFAULT_SINK@", "toggle", NULL };
-
+static const char *termcmd[]  = { "st", NULL };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
-
-	/* Super+P → Rofi */
-	{ MODKEY,                       XK_p,      spawn,          {.v = roficmd } },
-  /* Super+Ctrl+T → Alacritty */
-  { MODKEY|ControlMask,           XK_t,      spawn,          {.v = termcmd  } },
-  /* Ctrl+Alt+T → Alacritty (traditional) */
-  { ControlMask|Mod1Mask,         XK_t,      spawn,          {.v = termcmd  } },
-  /* Super+Shift+B → Zen browser */
-  { MODKEY|ShiftMask,             XK_b,      spawn,          {.v = zencmd   } },
-  /* Super+Q → QUIT APPLICATION */
-  { MODKEY,            XK_q,      killclient,  {0} },
+	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
+	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
-	{ MODKEY,                       XK_h,      focusstack,     {.i = +1 } },
-	{ MODKEY,                       XK_l,      focusstack,     {.i = -1 } },
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
 	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
-	{ MODKEY,                       XK_Left,   setmfact,       {.f = -0.05} },
-	{ MODKEY,                       XK_Right,  setmfact,       {.f = +0.05} },
+	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
+	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
 	{ MODKEY,                       XK_Return, zoom,           {0} },
 	{ MODKEY,                       XK_Tab,    view,           {0} },
-	{ Mod1Mask,                     XK_Tab,    view,           {0} },
 	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
@@ -122,14 +94,7 @@ static const Key keys[] = {
 	TAGKEYS(                        XK_7,                      6)
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
-  { ControlMask|Mod1Mask,  XK_Delete,  quit,  {0} },
-	/* XF86 media keys */
-	{ 0,                           XF86XK_MonBrightnessUp,   spawn, {.v = bright_up   } },
-	{ 0,                           XF86XK_MonBrightnessDown, spawn, {.v = bright_down } },
-	{ 0,                           XF86XK_AudioRaiseVolume,  spawn, {.v = vol_up      } },
-	{ 0,                           XF86XK_AudioLowerVolume,  spawn, {.v = vol_down    } },
-	{ 0,                           XF86XK_AudioMute,         spawn, {.v = vol_mute    } },
-
+	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
 };
 
 /* button definitions */
@@ -148,11 +113,4 @@ static const Button buttons[] = {
 	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
 };
-
-/* Systray settings */
-static const unsigned int systrayspacing = 2;       /* spacing between systray icons */
-static const int systraypinning = 0;                /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
-static const int systraypinningfailfirst = 1;       /* 1: if pinning fails, display systray on first monitor, False: last monitor */
-static const int systrayonleft = 0;                 /* 0: systray in the right corner, >0: left of status text */
-static const int showsystray = 1;                   /* 0 means no systray */
 
